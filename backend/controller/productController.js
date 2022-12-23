@@ -1,4 +1,5 @@
 const Product = require("../models/productModel");
+const SearchSort = require("../utils/SearchSort");
 
 //Add a products
 
@@ -14,12 +15,20 @@ exports.addProduct = async (req, res, next) => {
   }
 };
 
-exports.getAllProducts = async (req, res) => {
-  const products = await Product.find();
-  return res.status(200).json({
-    message: "success",
-    products,
-  });
+exports.getAllProducts = async (req, res, next) => {
+  try {
+    const searchSort = new SearchSort(Product.find(), req.query);
+    const count = await Product.count();
+    const Products = await searchSort.search().filter().pagination(3).query;
+
+    return res.status(200).json({
+      message: "success",
+      Products,
+      count,
+    });
+  } catch (e) {
+    console.log(e);
+  }
 };
 
 exports.updateProducts = async (req, res) => {
